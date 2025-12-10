@@ -8,8 +8,8 @@
 		</Console>
 
 		<RollingFile name="dailyFileRolling"
-			fileName="/opt/apache-tomcat-8.5.91/logs/hsc.log"
-			filePattern="/opt/apache-tomcat-8.5.91logs/hsc.log_%d{yyyyMMdd}.log"
+			fileName="/opt/apache-tomcat-9.0.111/logs/vijp.log"
+			filePattern="/opt/apache-tomcat-9.0.111logs/vijp.log_%d{yyyyMMdd}.log"
 			ignoreExceptions="false">
 			<PatternLayout>
 				<pattern>%d %t [%-5p] %c{2} - %m%n</pattern>
