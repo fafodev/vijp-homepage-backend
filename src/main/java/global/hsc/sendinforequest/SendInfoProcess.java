@@ -17,6 +17,7 @@ import global.common.database.DBAccessor;
 import global.common.dto.request.AbstractRequest;
 import global.common.dto.response.AbstractResponse;
 import global.common.exception.DBException;
+import global.common.exception.FatalException;
 import global.common.process.AbstractProcess;
 import global.common.utility.SendMailUtility;
 
@@ -27,20 +28,24 @@ public class SendInfoProcess extends AbstractProcess {
 	}
 
 	@Override
-	public AbstractResponse process(DBAccessor dba, AbstractRequest request, AbstractResponse response, AbstractResponse parentResponse) throws DBException {
+	public AbstractResponse process(DBAccessor dba, AbstractRequest request, AbstractResponse response, AbstractResponse parentResponse) throws DBException, FatalException {
 		SendInfoRequest reqSendInfo = (SendInfoRequest) request;
 		SendInfoResponse resSendInfo = (SendInfoResponse) response;
 		
 		String projectID = "vijp-notify";
-		String recaptchaKey = "6LfS-fMrAAAAAFiwuWP3NJj0wpAlg4yUUEQFEGaA";
+		String recaptchaKey = "6LfS-fMrAAAAAN6-myMEgDq_Wk23DSzlH--P8e8o";
 		String token = reqSendInfo.token;
 		String recaptchaAction = "sendContact";
-
-		int recaptchaChecked = checkRecaptcha(projectID, recaptchaKey, token, recaptchaAction);
-		if (recaptchaChecked != 0) {
-			logSender.logSend(LogLevel.FATAL, recaptchaAction);
-			resSendInfo.successful = 9;
-			return resSendInfo;
+		
+		try {
+			int recaptchaChecked = checkRecaptcha(projectID, recaptchaKey, token, recaptchaAction);
+			if (recaptchaChecked != 0) {
+				logSender.logSend(LogLevel.FATAL, recaptchaAction);
+				resSendInfo.successful = 9;
+				return resSendInfo;
+			}
+		} catch (IOException e) {
+			logSender.logSend(LogLevel.FATAL, e);
 		}
 
 		String mailTo = "info@vijp.jp";
@@ -49,18 +54,15 @@ public class SendInfoProcess extends AbstractProcess {
 		// Tiêu đề email
 		String mailSubject = "[VIJP Contact Inquiry] – " + reqSendInfo.name;
 
-		// Tạo nội dung email HTML
-		String mailContent =
-			    "<p><strong>New Contact Message from VIJP Website</strong></p>" +
-			    "<p>Dear VIJP Team,</p>" +
-			    "<table border='1' cellspacing='0' cellpadding='8' style='border-collapse: collapse;'>" +
-			      "<tr><td><strong>Name / お名前</strong></td><td>" + reqSendInfo.name + "</td></tr>" +
-			      "<tr><td><strong>Email</strong></td><td>" + reqSendInfo.email + "</td></tr>" +
-			      "<tr><td><strong>Phone Number / 電話番号</strong></td><td>" + reqSendInfo.phone + "</td></tr>" +
-			      "<tr><td><strong>Inquiry Type / お問い合わせ種類</strong></td><td>" + reqSendInfo.inquiryType + "</td></tr>" +
-			      "<tr><td><strong>Message / メッセージ</strong></td><td>" + reqSendInfo.message + "</td></tr>" +
-			    "</table>" +
-			    "<p style='margin-top:16px;'>Best regards,<br>VIJP Website System</p>";
+		String mailContent = 
+			    "New Contact Message from VIJP Website\r\n\r\n" +
+			    "Dear VIJP Team\r\n\r\n" +
+			      "Name / お名前：" + reqSendInfo.name + "\r\n" +
+			      "Email：" + reqSendInfo.email + "\r\n" +
+			      "Phone Number / 電話番号：" + reqSendInfo.phone + "\r\n" +
+			      "Inquiry Type / お問い合わせ種類：" + reqSendInfo.inquiryType + "\r\n" +
+			      "Message / メッセージ：" + reqSendInfo.message + "\r\n" +
+			    "\r\nBest regards,\r\n\r\nVIJP Website System";
 
 		// Gửi mail (HTML)
 		SendMailUtility mailSender = new SendMailUtility(logSender);
@@ -70,29 +72,53 @@ public class SendInfoProcess extends AbstractProcess {
 		return resSendInfo;
 	}
 
-	public int checkRecaptcha(String projectID, String recaptchaKey, String token, String recaptchaAction) {
-	    int result = 0;
+	public int checkRecaptcha(String projectID, String recaptchaKey, String token, String recaptchaAction) throws IOException {
+		int result = 0;
+		
+//		InputStream io = getClass().getResourceAsStream("/application_default_credentials.json");
+//		
+//		Storage storage = StorageOptions.newBuilder()
+//			    .setCredentials(GoogleCredentials.fromStream(io))
+//			    .build()
+//			    .getService();
+		
+		
+		try (RecaptchaEnterpriseServiceClient client = RecaptchaEnterpriseServiceClient.create()) {
 
-	    // Đây là secret key (không phải site key)
-	    String secretKey = recaptchaKey;
+			// Set the properties of the event to be tracked.
+			Event event = Event.newBuilder().setSiteKey(recaptchaKey).setToken(token).build();
 
-	    String verifyUrl = "https://www.google.com/recaptcha/api/siteverify"
-	            + "?secret=" + secretKey
-	            + "&response=" + token;
+			// Build the assessment request.
+			CreateAssessmentRequest createAssessmentRequest = CreateAssessmentRequest.newBuilder().setParent(ProjectName.of(projectID).toString())
+					.setAssessment(Assessment.newBuilder().setEvent(event).build()).build();
 
-	    RestTemplate restTemplate = new RestTemplate();
-	    Map<String, Object> response = restTemplate.postForObject(verifyUrl, null, Map.class);
+			Assessment response = client.createAssessment(createAssessmentRequest);
 
-	    if (response == null) {
-	        result = 1;
-	    } else {
-	        Boolean success = (Boolean) response.get("success");
-	        if (success == null || !success) {
-	            result = 1;
-	        }
-	    }
+			// Check if the token is valid.
+			if (!response.getTokenProperties().getValid()) {
+				result = 1;
+			}
 
-	    return result;
+			// Check if the expected action was executed.
+			if (!response.getTokenProperties().getAction().equals(recaptchaAction)) {
+				result = 1;
+			}
+
+			// Get the risk score and the reason(s).
+			// For more information on interpreting the assessment, see:
+			// https://cloud.google.com/recaptcha-enterprise/docs/interpret-assessment
+//			for (ClassificationReason reason : response.getRiskAnalysis().getReasonsList()) {
+//				System.out.println(reason);
+//			}
+
+//			float recaptchaScore = response.getRiskAnalysis().getScore();
+//			System.out.println("The reCAPTCHA score is: " + recaptchaScore);
+
+			// Get the assessment name (id). Use this to annotate the assessment.
+//			String assessmentName = response.getName();
+//			System.out.println("Assessment name: " + assessmentName.substring(assessmentName.lastIndexOf("/") + 1));
+		}
+		return result;
 	}
 
 	@Override

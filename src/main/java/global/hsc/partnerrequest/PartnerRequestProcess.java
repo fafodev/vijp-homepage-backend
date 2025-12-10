@@ -10,6 +10,7 @@ import global.common.database.DBAccessor;
 import global.common.dto.request.AbstractRequest;
 import global.common.dto.response.AbstractResponse;
 import global.common.exception.DBException;
+import global.common.exception.FatalException;
 import global.common.process.AbstractProcess;
 import global.common.utility.SendMailUtility;
 
@@ -20,7 +21,7 @@ public class PartnerRequestProcess extends AbstractProcess {
 	}
 
 	@Override
-	public AbstractResponse process(DBAccessor dba, AbstractRequest request, AbstractResponse response, AbstractResponse parentResponse) throws DBException {
+	public AbstractResponse process(DBAccessor dba, AbstractRequest request, AbstractResponse response, AbstractResponse parentResponse) throws DBException, FatalException {
 		PartnerRequestRequest reqSendInfo = (PartnerRequestRequest) request;
 		PartnerRequestResponse resSendInfo = (PartnerRequestResponse) response;
 		

@@ -13,14 +13,15 @@ import javax.mail.internet.MimeMessage;
 
 import global.common.ILogSender;
 import global.common.LogLevel;
+import global.common.exception.FatalException;
 
 public class SendMailUtility {
 
 	private ILogSender logSender = null;
 
 	// Using Google Sender
-	private static String username = "hscglobal.notify@gmail.com";
-	private static String password = "ukgrmnxxiooofspd";
+	private static String username = "vijp.notify@gmail.com";
+	private static String password = "rzmkubmiiyijoxiw";
 
 	public SendMailUtility(ILogSender logSender) {
 		this.logSender = logSender;
@@ -32,8 +33,9 @@ public class SendMailUtility {
 	 * @param toEmail
 	 * @param mailSubject
 	 * @param mailContent
+	 * @throws Exception 
 	 */
-	public void sendViaGoogle(String mailTo, String mailSubject, String mailContent) {
+	public void sendViaGoogle(String mailTo, String mailSubject, String mailContent) throws FatalException {
 
 		String host = "smtp.gmail.com";
 		int port = 587;
@@ -46,13 +48,17 @@ public class SendMailUtility {
 		props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
 		props.put("mail.smtp.ssl.protocols", "TLSv1.2");
 
-		Session session = Session.getInstance(props, new Authenticator() {
-			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-				return new javax.mail.PasswordAuthentication(username, password);
-			}
-		});
-
 		try {
+			this.logSender.logSend(LogLevel.DEBUG, "メールを送信先1：" + mailTo);
+			this.logSender.logSend(LogLevel.DEBUG, "メール内容1：" + mailContent);
+			Session session = Session.getInstance(props, new Authenticator() {
+				protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+					return new javax.mail.PasswordAuthentication(username, password);
+				}
+			});
+			
+			session.setDebug(true);
+			
 			Message message = new MimeMessage(session);
 			message.setFrom(new InternetAddress(username));
 
@@ -63,7 +69,7 @@ public class SendMailUtility {
 			}
 			message.addRecipients(Message.RecipientType.TO, addressList);
 			message.setSubject(mailSubject);
-			message.setContent(mailContent, "text/html; charset=UTF-8");
+			message.setText(mailContent);
 
 			// Log
 			this.logSender.logSend(LogLevel.DEBUG, "メールを送信先：" + mailTo);
@@ -71,9 +77,13 @@ public class SendMailUtility {
 
 			Transport.send(message);
 
-			logSender.logSend(LogLevel.FATAL, "メールが正常に送信されました");
-		} catch (MessagingException e) {
-			logSender.logSend(LogLevel.FATAL, e);
+			logSender.logSend(LogLevel.DEBUG, "メールが正常に送信されました");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+			logSender.logSend(LogLevel.FATAL, e.getMessage());
+			throw new FatalException(e.getMessage());
+			
 		}
 	}
 }
