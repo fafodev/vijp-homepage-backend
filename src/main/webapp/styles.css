@@ -1929,6 +1929,9 @@ blockquote > * {
 :root :is(.top-5) {
   top: 1.25rem;
 }
+:root :is(.top-8) {
+  top: 2rem;
+}
 :root :is(.z-10) {
   z-index: 10;
 }
@@ -1997,6 +2000,9 @@ blockquote > * {
 :root :is(.ml-8) {
   margin-left: 2rem;
 }
+:root :is(.mr-2) {
+  margin-right: 0.5rem;
+}
 :root :is(.mr-3) {
   margin-right: 0.75rem;
 }
@@ -2014,6 +2020,9 @@ blockquote > * {
 }
 :root :is(.mt-2) {
   margin-top: 0.5rem;
+}
+:root :is(.mt-20) {
+  margin-top: 5rem;
 }
 :root :is(.mt-3) {
   margin-top: 0.75rem;
@@ -2177,8 +2186,14 @@ blockquote > * {
 :root :is(.max-w-4xl) {
   max-width: 56rem;
 }
+:root :is(.max-w-5xl) {
+  max-width: 64rem;
+}
 :root :is(.max-w-7xl) {
   max-width: 80rem;
+}
+:root :is(.max-w-\[1600px\]) {
+  max-width: 1600px;
 }
 :root :is(.max-w-\[300px\]) {
   max-width: 300px;
@@ -2416,6 +2431,9 @@ blockquote > * {
 }
 :root :is(.border-b) {
   border-bottom-width: 1px;
+}
+:root :is(.border-l) {
+  border-left-width: 1px;
 }
 :root :is(.border-l-2) {
   border-left-width: 2px;
@@ -2672,6 +2690,9 @@ blockquote > * {
 :root :is(.object-cover) {
   object-fit: cover;
 }
+:root :is(.p-2) {
+  padding: 0.5rem;
+}
 :root :is(.p-3) {
   padding: 0.75rem;
 }
@@ -2919,6 +2940,10 @@ blockquote > * {
 }
 :root :is(.text-current) {
   color: currentColor;
+}
+:root :is(.text-default) {
+  --tw-text-opacity: 1;
+  color: rgb(var(--vex-foreground-text-rgb) / var(--tw-text-opacity));
 }
 :root :is(.text-gray-400) {
   --tw-text-opacity: 1;
@@ -3253,6 +3278,9 @@ blockquote > * {
   --tw-bg-opacity: 1;
   background-color: rgb(200 16 46 / var(--tw-bg-opacity));
 }
+:root :is(.first\:border-l-0:first-child) {
+  border-left-width: 0px;
+}
 :root :is(.hover\:-translate-y-1:hover) {
   --tw-translate-y: -0.25rem;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -3496,6 +3524,10 @@ blockquote > * {
     grid-column: span 3 / span 3;
   }
 
+  :root :is(.sm\:col-span-4) {
+    grid-column: span 4 / span 4;
+  }
+
   :root :is(.sm\:mr-6) {
     margin-right: 1.5rem;
   }
@@ -3504,12 +3536,24 @@ blockquote > * {
     display: block;
   }
 
+  :root :is(.sm\:h-full) {
+    height: 100%;
+  }
+
   :root :is(.sm\:w-40) {
     width: 10rem;
   }
 
+  :root :is(.sm\:w-full) {
+    width: 100%;
+  }
+
   :root :is(.sm\:max-w-lg) {
     max-width: 32rem;
+  }
+
+  :root :is(.sm\:grid-cols-1) {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 
   :root :is(.sm\:grid-cols-2) {
@@ -3588,12 +3632,28 @@ blockquote > * {
     margin-top: 3rem;
   }
 
+  :root :is(.md\:flex) {
+    display: flex;
+  }
+
   :root :is(.md\:h-\[70vh\]) {
     height: 70vh;
   }
 
+  :root :is(.md\:h-full) {
+    height: 100%;
+  }
+
   :root :is(.md\:min-h-\[450px\]) {
     min-height: 450px;
+  }
+
+  :root :is(.md\:w-1\/3) {
+    width: 33.333333%;
+  }
+
+  :root :is(.md\:w-2\/3) {
+    width: 66.666667%;
   }
 
   :root :is(.md\:w-3\/4) {
@@ -3642,6 +3702,10 @@ blockquote > * {
 
   :root :is(.md\:items-center) {
     align-items: center;
+  }
+
+  :root :is(.md\:items-stretch) {
+    align-items: stretch;
   }
 
   :root :is(.md\:p-12) {
@@ -3696,12 +3760,20 @@ blockquote > * {
     display: block;
   }
 
+  :root :is(.lg\:h-24) {
+    height: 6rem;
+  }
+
   :root :is(.lg\:w-56) {
     width: 14rem;
   }
 
   :root :is(.lg\:w-6\/12) {
     width: 50%;
+  }
+
+  :root :is(.lg\:w-96) {
+    width: 24rem;
   }
 
   :root :is(.lg\:grid-cols-3) {
@@ -3734,6 +3806,10 @@ blockquote > * {
 
   :root :is(.xl\:w-64) {
     width: 16rem;
+  }
+
+  :root :is(.xl\:w-96) {
+    width: 24rem;
   }
 }
 /*!***********************************************************************************************************************************************************************************************************************************!*\
@@ -41077,7 +41153,8 @@ body .apexcharts-tooltip.light{
 .vex-layout-fafo {
   --vex-toolbar-height: 100px;
   --vex-secondary-toolbar-background: var(--vex-background-background);
-  --vex-secondary-toolbar-height: 64px;
+  --vex-secondary-toolbar-height: 0px;
+  --vex-navigation-height: 0px;
 }
 .vex-layout-fafo.vex-style-light {
   --vex-toolbar-background: var(--vex-background-background);
